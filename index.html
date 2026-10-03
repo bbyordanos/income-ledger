@@ -1,0 +1,657 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#1D2A9B">
+<title>Baleyew and Mistyew Ledger</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=Noto+Sans+Ethiopic:wght@400;600&family=Zilla+Slab:wght@500;600;700&display=swap">
+<style>
+:root{
+  color-scheme:light;
+  --desk:#E6E1D2;--paper:#F5F1E6;--paper-2:#ECE7D8;--ink:#1D2A9B;--col:#6A74C6;
+  --text:#22232B;--muted:#686762;--rule:#CEC8B4;--on-ink:#FFFFFF;
+  --ok:#1D6F45;--ok-bg:#D9EDE0;--warn:#8F5500;--warn-bg:#F6E3B8;--bad:#A32B2B;--bad-bg:#F5D8D4;
+  --font-display:"Zilla Slab",Georgia,serif;
+  --font-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --font-num:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  --font-am:"Noto Sans Ethiopic","Abyssinica SIL",var(--font-body);
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    color-scheme:dark;
+    --desk:#0D0E12;--paper:#15171D;--paper-2:#1D2029;--ink:#93A3FF;--col:#4F5BB8;
+    --text:#E8E6DE;--muted:#9C9B94;--rule:#2C303B;--on-ink:#10122A;
+    --ok:#74D6A4;--ok-bg:#173A2B;--warn:#F2BB5E;--warn-bg:#3A2C10;--bad:#FF918A;--bad-bg:#3F1C1A;
+  }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--desk);color:var(--text);font:15px/1.45 var(--font-body);
+  padding:max(20px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(48px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))}
+[hidden]{display:none!important}
+.wrap{max-width:1240px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.sheet{background:var(--paper);border:1px solid var(--rule);border-radius:4px 14px 14px 4px}
+.pad{padding:20px 22px}
+
+/* login */
+.login{max-width:420px;margin:8vh auto 0}
+.login h1{margin-bottom:6px}
+.login p{margin:0 0 18px;color:var(--muted)}
+.login .f + .f{margin-top:14px}
+
+/* header */
+.top{display:flex;flex-wrap:wrap;gap:16px 32px;justify-content:space-between;align-items:flex-end}
+.eyebrow{margin:0 0 2px;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+h1{margin:0;font:700 clamp(30px,5vw,44px)/1.05 var(--font-display);color:var(--ink);text-wrap:balance}
+.memo{display:grid;gap:6px;min-width:min(100%,300px)}
+.memo .line{display:flex;gap:10px;align-items:baseline;border-bottom:1.5px solid var(--col);padding-bottom:2px}
+.memo .line span{font-size:12px;color:var(--muted);letter-spacing:.04em}
+.memo .line b{font:500 17px var(--font-am);color:var(--ink);margin-left:auto}
+.memo .line b.n{font-family:var(--font-num)}
+.meta{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:center;justify-content:space-between;padding-top:14px;margin-top:16px;border-top:1px solid var(--rule)}
+.week{display:flex;gap:4px}
+.week span{width:30px;text-align:center;font-size:11px;padding:3px 0;border:1px solid var(--col);border-radius:2px;color:var(--muted)}
+.week span.on{background:var(--ink);border-color:var(--ink);color:var(--on-ink);font-weight:600}
+.who{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.chip{display:inline-flex;gap:6px;align-items:center;padding:4px 10px;border:1px solid var(--rule);border-radius:99px;font-size:13px;background:var(--paper-2)}
+.chip.me{border-color:var(--ink);color:var(--ink)}
+.chip em{font-style:normal;color:var(--muted)}
+.chip.me em{color:var(--ink)}
+
+.banner{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;padding:12px 16px;border-radius:8px;background:var(--warn-bg);color:var(--warn);font-weight:500}
+.banner .grow{flex:1;min-width:200px}
+
+/* form */
+h2{margin:0 0 12px;font:600 21px var(--font-display);color:var(--ink)}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px 16px}
+.f{display:flex;flex-direction:column;gap:4px;min-width:0}
+.f.wide{grid-column:span 2}
+@media (max-width:420px){.f.wide{grid-column:auto}}
+.f label,.f .lab{font-size:12px;letter-spacing:.04em;color:var(--muted)}
+.f input[type=text],.f input[type=email],.f input[type=password],.f input[type=number],.f input[type=date]{
+  width:100%;padding:8px 2px;border:0;border-bottom:1.5px solid var(--col);background:transparent;border-radius:0;
+  font-family:var(--font-num);font-size:16px;color:var(--ink)}
+.f input[type=text],.f input[type=email],.f input[type=password]{font-family:var(--font-body)}
+.f input::placeholder{color:var(--muted);opacity:.7}
+.f .hint{font-size:12px;color:var(--muted);font-family:var(--font-am)}
+.seg{display:flex;border:1.5px solid var(--col);border-radius:6px;overflow:hidden;width:100%;max-width:260px}
+.seg label{position:relative;cursor:pointer;margin:0;flex:1 1 0;min-width:0}
+.seg input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
+.seg span{display:block;padding:8px 6px;font:600 14px var(--font-num);color:var(--ink);letter-spacing:.04em;border-right:1.5px solid var(--col);text-align:center}
+.seg label:last-child span{border-right:0}
+.seg input:checked + span{background:var(--ink);color:var(--on-ink)}
+.seg input:focus-visible + span{outline:2px solid var(--ink);outline-offset:-4px}
+.cash-hint{margin:10px 0 0;padding:10px 12px;border-radius:8px;background:var(--warn-bg);color:var(--warn);font-size:14px}
+.actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:16px}
+.btn{cursor:pointer;border:1.5px solid var(--ink);background:var(--ink);color:var(--on-ink);padding:9px 18px;border-radius:6px;font-weight:600}
+.btn.ghost{background:transparent;color:var(--ink)}
+.btn.sm{padding:5px 11px;font-size:13px}
+.btn.danger{border-color:var(--bad);color:var(--bad);background:transparent}
+.btn.danger.armed{background:var(--bad);color:var(--paper)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.msg{font-size:14px}.msg.err{color:var(--bad)}.msg.good{color:var(--ok)}
+
+/* month bar */
+.bar{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;justify-content:space-between;padding:16px 22px 12px}
+.bar h2{margin:0}
+.month{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.month select,.month input{padding:6px 8px;border:1.5px solid var(--col);border-radius:6px;background:var(--paper);color:var(--ink);font-size:15px}
+.month input{width:84px;font-family:var(--font-num)}
+.month .btn{padding:6px 12px}
+.filters{display:flex;gap:6px;flex-wrap:wrap;padding:0 22px 12px}
+.filters button{cursor:pointer;background:transparent;border:1px solid var(--rule);color:var(--text);padding:5px 12px;border-radius:99px;font-size:13px}
+.filters button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--on-ink)}
+
+/* ledger */
+.scroll{overflow-x:auto}
+table.ledger{border-collapse:collapse;width:100%;min-width:1000px}
+.ledger th{font:500 12px/1.2 var(--font-body);letter-spacing:.05em;color:var(--muted);text-align:left;padding:10px 12px;border-bottom:2px solid var(--col);vertical-align:bottom}
+.ledger th.r{text-align:right}
+.ledger td{padding:10px 12px;border-bottom:1px solid var(--rule);vertical-align:top}
+.ledger th + th,.ledger td + td{border-left:1.5px solid var(--col)}
+.ledger td.num{text-align:right;font:400 15px var(--font-num);font-variant-numeric:tabular-nums;white-space:nowrap}
+.ledger td.num.zero{color:var(--muted)}
+.ledger td.num.in{color:var(--ink);font-weight:500}
+.d1{font-weight:600;color:var(--ink)}
+.d2{font-size:12px;color:var(--muted)}
+.note{max-width:260px;overflow-wrap:anywhere}
+.type-line{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center}
+.tag{font:600 12px var(--font-num);letter-spacing:.05em;border:1.5px solid var(--col);color:var(--ink);padding:2px 8px;border-radius:4px}
+.tag.cash{border-color:var(--warn);color:var(--warn)}
+.st{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:500;padding:3px 9px;border-radius:99px}
+.st.wait{background:var(--warn-bg);color:var(--warn)}
+.st.ok{background:var(--ok-bg);color:var(--ok)}
+.st.stale{background:var(--bad-bg);color:var(--bad)}
+.st svg{width:14px;height:14px;flex:none}
+.st-sub{font-size:12px;color:var(--muted);margin-top:4px}
+.row-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.ledger tfoot td{border-top:2px solid var(--col);border-bottom:0;font-weight:600;background:var(--paper-2)}
+.ledger tfoot td.num{color:var(--ink)}
+.ledger tfoot td.num.zero{color:var(--muted)}
+.sums{display:flex;flex-wrap:wrap;gap:8px 22px;padding:14px 22px 18px;font-size:14px;color:var(--muted)}
+.sums b{font-family:var(--font-num);color:var(--ink);font-weight:600}
+.state{padding:36px 22px 40px;text-align:center;color:var(--muted)}
+.state strong{display:block;font:600 19px var(--font-display);color:var(--ink);margin-bottom:4px}
+.toast{position:fixed;left:16px;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));max-width:460px;margin:0 auto;background:var(--ink);color:var(--on-ink);padding:12px 16px;border-radius:10px;font-weight:500;box-shadow:0 6px 24px rgba(0,0,0,.25)}
+
+@media (max-width:860px){
+  .pad{padding:16px}
+  .bar{padding:14px 16px 10px}.filters{padding:0 16px 12px}.sums{padding:12px 16px 16px}
+  .scroll{overflow-x:visible}
+  table.ledger{min-width:0}
+  .ledger thead{display:none}
+  .ledger,.ledger tbody,.ledger tfoot,.ledger tr{display:block}
+  .ledger tr{padding:8px 0;border-bottom:2px solid var(--col)}
+  .ledger td{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;border:0!important;padding:4px 16px;text-align:right}
+  .ledger td::before{content:attr(data-label);color:var(--muted);font-size:12px;letter-spacing:.04em;text-align:left;flex:none;padding-top:3px}
+  .ledger td.date{border-bottom:1px solid var(--rule)!important;padding-bottom:8px;margin-bottom:4px}
+  .ledger td.date > div,.ledger td.type > div{text-align:right}
+  .ledger tbody td.num.zero{display:none}
+  .ledger td.note{max-width:none}
+  .type-line,.row-actions{justify-content:flex-end}
+  .ledger tfoot tr{border-bottom:0}
+  .ledger tfoot td.empty{display:none}
+}
+@media (prefers-reduced-motion:no-preference){.toast{animation:rise .2s ease-out}@keyframes rise{from{transform:translateY(8px);opacity:0}}}
+
+#ownerPanel .fields{grid-template-columns:repeat(auto-fit,minmax(180px,1fr));max-width:520px}
+#ownerPanel p{margin:0 0 12px;color:var(--muted)}
+.setup ol{margin:10px 0 0;padding-left:20px;color:var(--text)}
+.setup li{margin:6px 0}
+.setup code{font-family:var(--font-num);font-size:13px;background:var(--paper-2);padding:1px 5px;border-radius:4px}
+.dberr{padding:12px 16px;border-radius:8px;background:var(--bad-bg);color:var(--bad);font-weight:500}
+</style>
+</head>
+<body>
+
+<!-- SETUP NOTICE -->
+<div class="wrap" id="setupView" hidden>
+  <section class="sheet pad login setup">
+    <p class="eyebrow">Baleyew and Mistyew</p>
+    <h1>Income Ledger</h1>
+    <p id="setupText">The database is not connected yet.</p>
+    <ol>
+      <li>Open <code>firebase-config.js</code>.</li>
+      <li>Paste your Firebase settings into it.</li>
+      <li>Save the file and reload this page.</li>
+    </ol>
+    <p style="margin-top:14px">The README explains each step.</p>
+  </section>
+</div>
+
+<!-- APP -->
+<div class="wrap" id="appView" hidden>
+  <section class="sheet pad" aria-label="Page header">
+    <div class="top">
+      <div>
+        <p class="eyebrow">Baleyew and Mistyew</p>
+        <h1>Income Ledger</h1>
+      </div>
+      <div class="memo">
+        <div class="line"><span>Memo No.</span><b class="n" id="memoNo">0</b></div>
+        <div class="line"><span>Date</span><b id="todayEth"></b></div>
+      </div>
+    </div>
+    <div class="meta">
+      <div class="week" id="week" aria-label="Day of the week"></div>
+      <div class="who" id="who"></div>
+    </div>
+  </section>
+
+  <div class="dberr" id="dberr" role="alert" hidden></div>
+  <div class="banner" id="banner" role="status" aria-live="polite" hidden></div>
+
+  <section class="sheet pad" id="ownerPanel" aria-labelledby="opTitle" hidden>
+    <h2 id="opTitle">Owner sign-in</h2>
+    <p id="opText"></p>
+    <form id="pinForm" novalidate>
+      <div class="fields">
+        <div class="f">
+          <label for="pin1" id="pin1Lab">Owner PIN</label>
+          <input type="password" id="pin1" inputmode="numeric" autocomplete="off" maxlength="20">
+        </div>
+        <div class="f" id="pin2Wrap" hidden>
+          <label for="pin2">Repeat PIN</label>
+          <input type="password" id="pin2" inputmode="numeric" autocomplete="off" maxlength="20">
+        </div>
+      </div>
+      <div class="actions">
+        <button type="submit" class="btn" id="pinBtn">Unlock</button>
+        <button type="button" class="btn ghost" id="pinCancel">Cancel</button>
+        <span class="msg" id="pinMsg" role="status" aria-live="polite"></span>
+      </div>
+    </form>
+  </section>
+
+  <section class="sheet pad" aria-labelledby="formTitle" id="formSheet">
+    <h2 id="formTitle">New entry</h2>
+    <form id="form" novalidate>
+      <div class="fields">
+        <div class="f">
+          <label for="fDate">Date</label>
+          <input type="date" id="fDate" required>
+          <span class="hint" id="fDateEth"></span>
+        </div>
+        <div class="f">
+          <label for="fGebi">Gebi</label>
+          <input type="number" id="fGebi" inputmode="decimal" min="0" step="any" placeholder="0">
+        </div>
+        <div class="f wide">
+          <label for="fNote">Note</label>
+          <input type="text" id="fNote" maxlength="200" placeholder="What was this for?" autocomplete="off">
+        </div>
+        <div class="f">
+          <label for="fWechi">Wechi</label>
+          <input type="number" id="fWechi" inputmode="decimal" min="0" step="any" placeholder="0">
+        </div>
+        <div class="f">
+          <label for="fDeposit">Deposit</label>
+          <input type="number" id="fDeposit" inputmode="decimal" min="0" step="any" placeholder="0">
+        </div>
+        <div class="f">
+          <label for="fAsrat">Aserat B</label>
+          <input type="number" id="fAsrat" inputmode="decimal" min="0" step="any" placeholder="0">
+        </div>
+        <div class="f">
+          <label for="fBalebet">Ye Balebet Sunchips</label>
+          <input type="number" id="fBalebet" inputmode="decimal" min="0" step="any" placeholder="0">
+        </div>
+        <div class="f">
+          <label for="fMiste">Ye Miste Deresha</label>
+          <input type="number" id="fMiste" inputmode="decimal" min="0" step="any" placeholder="0">
+        </div>
+        <div class="f">
+          <span class="lab" id="typeLab">Deposit type</span>
+          <div class="seg" role="radiogroup" aria-labelledby="typeLab">
+            <label><input type="radio" name="dtype" value="CBE"><span>CBE</span></label>
+            <label><input type="radio" name="dtype" value="T"><span>T</span></label>
+            <label><input type="radio" name="dtype" value="CASH"><span>CASH</span></label>
+          </div>
+        </div>
+      </div>
+      <p class="cash-hint" id="cashHint" hidden></p>
+      <div class="actions">
+        <button type="submit" class="btn" id="saveBtn">Add entry</button>
+        <button type="button" class="btn ghost" id="cancelBtn" hidden>Cancel edit</button>
+        <span class="msg" id="formMsg" role="status" aria-live="polite"></span>
+      </div>
+    </form>
+  </section>
+
+  <section class="sheet" aria-labelledby="ledgerTitle">
+    <div class="bar">
+      <h2 id="ledgerTitle">Ledger</h2>
+      <div class="month">
+        <button type="button" class="btn ghost" id="prevM" aria-label="Previous month">&larr;</button>
+        <label class="d2" for="selM" hidden>Month</label>
+        <select id="selM"></select>
+        <label class="d2" for="selY" hidden>Year</label>
+        <input type="number" id="selY" min="1990" max="2100" inputmode="numeric">
+        <button type="button" class="btn ghost" id="nextM" aria-label="Next month">&rarr;</button>
+        <button type="button" class="btn ghost" id="thisM">This month</button>
+      </div>
+    </div>
+    <div class="filters" id="filters">
+      <button type="button" data-f="all" aria-pressed="true">All</button>
+      <button type="button" data-f="wait" aria-pressed="false">Cash waiting</button>
+      <button type="button" data-f="ok" aria-pressed="false">Cash approved</button>
+    </div>
+    <div class="scroll">
+      <table class="ledger">
+        <thead>
+          <tr>
+            <th>Date</th><th class="r">Gebi</th><th>Note</th><th class="r">Wechi</th><th class="r">Deposit</th>
+            <th class="r">Aserat B</th><th class="r">Ye Balebet Sunchips</th><th class="r">Ye Miste Deresha</th><th>Deposit type</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+        <tfoot id="foot"></tfoot>
+      </table>
+    </div>
+    <div class="state" id="state"></div>
+    <div class="sums" id="sums" hidden></div>
+  </section>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script>
+(function(){
+"use strict";
+var EM=["Meskerem","Tikimt","Hidar","Tahsas","Tir","Yekatit","Megabit","Miazia","Ginbot","Sene","Hamle","Nehase","Pagume"];
+var AM=["መስከረም","ጥቅምት","ኅዳር","ታኅሣሥ","ጥር","የካቲት","መጋቢት","ሚያዝያ","ግንቦት","ሰኔ","ሐምሌ","ነሐሴ","ጳጉሜ"];
+var DAYS=["Su","Mo","Tu","We","Th","Fr","Sa"],DAYFULL=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+var GM=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+var AMOUNTS=["gebi","wechi","deposit","asrat","balebet","miste"];
+var TOKEN_KEY="ledgerOwnerToken";
+var $=function(id){return document.getElementById(id);};
+
+function jdn(y,m,d){var a=Math.floor((14-m)/12),yy=y+4800-a,mm=m+12*a-3;return d+Math.floor((153*mm+2)/5)+365*yy+Math.floor(yy/4)-Math.floor(yy/100)+Math.floor(yy/400)-32045;}
+function toEth(iso){var p=iso.split("-").map(Number);var j=jdn(p[0],p[1],p[2])-1723856;var r=j%1461;var n=(r%365)+365*Math.floor(r/1460);return{y:4*Math.floor(j/1461)+Math.floor(r/365)-Math.floor(r/1460),m:Math.floor(n/30)+1,d:(n%30)+1};}
+function todayISO(){var t=new Date();return t.getFullYear()+"-"+String(t.getMonth()+1).padStart(2,"0")+"-"+String(t.getDate()).padStart(2,"0");}
+function dt(iso){var p=iso.split("-").map(Number);return new Date(p[0],p[1]-1,p[2]);}
+function gLabel(iso){var t=dt(iso);return t.getDate()+" "+GM[t.getMonth()]+" "+t.getFullYear();}
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+function fmt(n){return Number(n||0).toLocaleString("en-US",{maximumFractionDigits:2});}
+function stamp(ms){return new Date(ms).toLocaleString([],{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"});}
+function sigOf(e){return[e.date,e.gebi,e.wechi,e.deposit,e.type].join("|");}
+function lsGet(k){try{return localStorage.getItem(k);}catch(e){return null;}}
+function lsSet(k,v){try{if(v==null)localStorage.removeItem(k);else localStorage.setItem(k,v);}catch(e){}}
+
+var db=null,entries=[],approvals=new Map(),settings=null;
+var loadedE=false,loadedS=false,filter="all",editing=null,armed=null,armTimer=null,toastTimer=null,panelOpen=false;
+var today=toEth(todayISO()),view={y:today.y,m:today.m};
+
+/* ---- owner mode ---- */
+function isOwner(){return !!(settings&&settings.hash&&lsGet(TOKEN_KEY)===settings.hash);}
+function hex(buf){return Array.from(new Uint8Array(buf)).map(function(b){return b.toString(16).padStart(2,"0");}).join("");}
+function hashPin(pin,saltHex){
+  if(!window.crypto||!crypto.subtle)return Promise.reject(new Error("This page must be opened over HTTPS to use the PIN."));
+  var enc=new TextEncoder(),salt=new Uint8Array(saltHex.match(/../g).map(function(h){return parseInt(h,16);}));
+  return crypto.subtle.importKey("raw",enc.encode(pin),"PBKDF2",false,["deriveBits"]).then(function(k){
+    return crypto.subtle.deriveBits({name:"PBKDF2",salt:salt,iterations:100000,hash:"SHA-256"},k,256);
+  }).then(hex);
+}
+function randomSalt(){var a=new Uint8Array(16);crypto.getRandomValues(a);return hex(a);}
+
+/* ---- header ---- */
+function drawHeader(){
+  var e=toEth(todayISO());
+  $("todayEth").textContent=AM[e.m-1]+" "+e.d+", "+e.y;
+  var dow=new Date().getDay();
+  $("week").innerHTML=[1,2,3,4,5,6,0].map(function(i){return '<span'+(i===dow?' class="on" aria-current="date"':'')+'>'+DAYS[i]+'</span>';}).join("");
+  var owner=isOwner();
+  $("who").innerHTML=
+    '<span class="chip'+(owner?' me':'')+'"><b>Baleyew</b><em>Owner'+(owner?' · you':'')+'</em></span>'+
+    '<span class="chip'+(!owner?' me':'')+'"><b>Mistyew</b><em>Worker'+(!owner?' · you':'')+'</em></span>'+
+    (owner?'<button type="button" class="btn sm ghost" id="ownerBtn" data-mode="lock">Lock owner mode</button>':
+           '<button type="button" class="btn sm ghost" id="ownerBtn" data-mode="open">Owner sign-in</button>');
+}
+
+/* ---- month ---- */
+function buildMonthSelect(){
+  $("selM").innerHTML=EM.map(function(n,i){return '<option value="'+(i+1)+'">'+n+' · '+AM[i]+'</option>';}).join("");
+  syncMonth();
+}
+function syncMonth(){$("selM").value=String(view.m);$("selY").value=String(view.y);}
+function moveMonth(d){view.m+=d;if(view.m>13){view.m=1;view.y++;}if(view.m<1){view.m=13;view.y--;}syncMonth();render();}
+function inMonth(e){var x=toEth(e.date);return x.y===view.y&&x.m===view.m;}
+
+/* ---- render ---- */
+var CHECK='<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3.2 3.2L13 4.8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+var CLOCK='<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8 4.8V8l2.2 1.4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
+
+function cashState(e){
+  if(e.type!=="CASH")return null;
+  var a=approvals.get(e.id);
+  if(!a)return"waiting";
+  return a.sig===sigOf(e)?"approved":"changed";
+}
+function typeCell(e){
+  if(!e.type)return '<span class="d2">–</span>';
+  var owner=isOwner(),cs=e.cash,h='<div><div class="type-line"><span class="tag'+(e.type==="CASH"?' cash':'')+'">'+esc(e.type)+'</span>';
+  if(cs==="approved"){var a=approvals.get(e.id);h+='<span class="st ok">'+CHECK+'Approved by Baleyew</span></div><div class="st-sub">'+esc(stamp(a.at))+' · both of you can see this</div>';}
+  else if(cs==="changed")h+='<span class="st stale">'+CLOCK+'Changed after approval</span></div><div class="st-sub">Baleyew needs to approve again</div>';
+  else if(cs==="waiting")h+='<span class="st wait">'+CLOCK+'Waiting for Baleyew</span></div>';
+  else h+='</div>';
+  var b="";
+  if(owner&&cs&&cs!=="approved")b+='<button type="button" class="btn sm" data-act="approve" data-id="'+esc(e.id)+'">Approve cash</button>';
+  b+='<button type="button" class="btn sm ghost" data-act="edit" data-id="'+esc(e.id)+'">Edit</button>';
+  if(owner||cs!=="approved")b+='<button type="button" class="btn sm danger'+(armed===e.id?' armed':'')+'" data-act="del" data-id="'+esc(e.id)+'">'+(armed===e.id?'Confirm delete':'Delete')+'</button>';
+  return h+'<div class="row-actions">'+b+'</div></div>';
+}
+function cell(label,v,cls){return '<td class="num '+(cls||'')+(v?'':' zero')+'" data-label="'+label+'">'+(v?fmt(v):'–')+'</td>';}
+
+function prepared(){
+  var list=entries.slice().sort(function(a,b){return(a.createdAt||0)-(b.createdAt||0);});
+  list.forEach(function(e,i){e.no=i+1;e.cash=cashState(e);});
+  return list;
+}
+function render(){
+  drawHeader();
+  var all=prepared();
+  $("memoNo").textContent=String(all.length);
+  var monthList=all.filter(inMonth).sort(function(a,b){return a.date<b.date?-1:a.date>b.date?1:a.no-b.no;});
+  var shown=monthList.filter(function(e){
+    if(filter==="all")return true;
+    if(filter==="wait")return e.cash&&e.cash!=="approved";
+    return e.cash==="approved";
+  });
+  $("rows").innerHTML=shown.map(function(e){
+    var ed=toEth(e.date);
+    return '<tr><td class="date" data-label="Date"><div><div class="d1">'+ed.d+' '+EM[ed.m-1]+'</div><div class="d2">'+ed.y+' · '+esc(gLabel(e.date))+' · '+DAYFULL[dt(e.date).getDay()]+'</div><div class="d2">No. '+e.no+' · '+esc(e.by)+'</div></div></td>'+
+      cell("Gebi",e.gebi,"in")+'<td class="note" data-label="Note">'+(e.note?esc(e.note):'<span class="d2">–</span>')+'</td>'+
+      cell("Wechi",e.wechi)+cell("Deposit",e.deposit)+cell("Aserat B",e.asrat)+cell("Ye Balebet Sunchips",e.balebet)+cell("Ye Miste Deresha",e.miste)+
+      '<td class="type" data-label="Deposit type">'+typeCell(e)+'</td></tr>';
+  }).join("");
+
+  var tot={};AMOUNTS.forEach(function(k){tot[k]=shown.reduce(function(s,e){return s+(Number(e[k])||0);},0);});
+  $("foot").innerHTML=shown.length?
+    '<tr><td data-label="Total, '+EM[view.m-1]+' '+view.y+'">Total · '+shown.length+(shown.length===1?' entry':' entries')+'</td>'+
+    cell("Gebi",tot.gebi)+'<td class="empty"></td>'+cell("Wechi",tot.wechi)+cell("Deposit",tot.deposit)+cell("Aserat B",tot.asrat)+cell("Ye Balebet Sunchips",tot.balebet)+cell("Ye Miste Deresha",tot.miste)+'<td class="empty"></td></tr>':"";
+
+  var st=$("state");
+  if(!loadedE){st.hidden=false;st.innerHTML='<strong>Opening the ledger</strong>Entries from Baleyew and Mistyew appear here.';}
+  else if(!monthList.length){st.hidden=false;st.innerHTML='<strong>No entries in '+EM[view.m-1]+' '+view.y+'</strong>Add one above, or use the arrows to look at another month.';}
+  else if(!shown.length){st.hidden=false;st.innerHTML='<strong>Nothing matches this filter</strong>Switch to All to see every entry this month.';}
+  else st.hidden=true;
+
+  var s=$("sums");
+  if(monthList.length){
+    var by={CBE:0,T:0,cashOk:0,cashWait:0};
+    monthList.forEach(function(e){var d=Number(e.deposit)||0;if(!d)return;
+      if(e.type==="CBE")by.CBE+=d;else if(e.type==="T")by.T+=d;else if(e.type==="CASH"){if(e.cash==="approved")by.cashOk+=d;else by.cashWait+=d;}});
+    s.hidden=false;
+    s.innerHTML='<span>Deposits this month:</span><span>CBE <b>'+fmt(by.CBE)+'</b></span><span>T <b>'+fmt(by.T)+'</b></span><span>Cash approved <b>'+fmt(by.cashOk)+'</b></span><span>Cash waiting <b>'+fmt(by.cashWait)+'</b></span>';
+  }else s.hidden=true;
+
+  Array.prototype.forEach.call($("filters").children,function(b){b.setAttribute("aria-pressed",String(b.dataset.f===filter));});
+  drawBanner(all);drawPanel();syncForm();
+}
+function drawBanner(all){
+  var w=all.filter(function(e){return e.cash&&e.cash!=="approved";}),b=$("banner");
+  if(!w.length){b.hidden=true;return;}
+  var sum=w.reduce(function(s,e){return s+(Number(e.deposit)||0);},0),n=w.length;
+  b.hidden=false;
+  b.innerHTML='<span class="grow">'+n+(n===1?' cash entry is':' cash entries are')+(isOwner()?' waiting for your approval':' waiting for Baleyew to approve')+(sum?' · '+fmt(sum)+' Birr':'')+'.</span><button type="button" class="btn sm ghost" id="showWait">Show them</button>';
+}
+function showError(text){var d=$("dberr");d.hidden=!text;d.textContent=text||"";}
+
+/* ---- owner panel ---- */
+function drawPanel(){
+  var p=$("ownerPanel");
+  if(!panelOpen||isOwner()){p.hidden=true;return;}
+  p.hidden=false;
+  var first=loadedS&&!(settings&&settings.hash);
+  $("opTitle").textContent=first?"Create the owner PIN":"Owner sign-in";
+  $("opText").textContent=first?"Only Baleyew should do this, before the link is shared with anyone else. Pick a PIN of 4 or more digits and remember it. It is needed to approve cash.":"Enter Baleyew's PIN to approve cash on this device.";
+  $("pin1Lab").textContent=first?"New PIN":"Owner PIN";
+  $("pin2Wrap").hidden=!first;
+  $("pinBtn").textContent=first?"Save PIN":"Unlock";
+}
+
+/* ---- form ---- */
+function setForm(e){
+  $("fDate").value=e?e.date:todayISO();
+  $("fNote").value=e?e.note||"":"";
+  ["Gebi","Wechi","Deposit","Asrat","Balebet","Miste"].forEach(function(n){var v=e?e[n.toLowerCase()]:0;$("f"+n).value=v?v:"";});
+  Array.prototype.forEach.call(document.getElementsByName("dtype"),function(r){r.checked=!!e&&r.value===e.type;});
+  syncForm();
+}
+function syncForm(){
+  var iso=$("fDate").value;
+  $("fDateEth").textContent=iso?(function(){var e=toEth(iso);return AM[e.m-1]+" "+e.d+", "+e.y+" · "+EM[e.m-1];})():"";
+  var t=document.querySelector('input[name="dtype"]:checked'),h=$("cashHint");
+  if(t&&t.value==="CASH"){h.hidden=false;h.textContent=isOwner()?"Cash you enter is approved automatically.":"Cash stays marked “Waiting” until Baleyew approves it. You will both see the approval here.";}
+  else h.hidden=true;
+  $("formTitle").textContent=editing?"Edit entry":"New entry";
+  $("saveBtn").textContent=editing?"Save changes":"Add entry";
+  $("cancelBtn").hidden=!editing;
+}
+function say(text,kind){var m=$("formMsg");m.textContent=text||"";m.className="msg"+(kind?" "+kind:"");}
+function readForm(){
+  var t=document.querySelector('input[name="dtype"]:checked');
+  var o={date:$("fDate").value,note:$("fNote").value.trim(),type:t?t.value:""};
+  [["gebi","fGebi"],["wechi","fWechi"],["deposit","fDeposit"],["asrat","fAsrat"],["balebet","fBalebet"],["miste","fMiste"]].forEach(function(p){
+    var v=parseFloat($(p[1]).value);o[p[0]]=isFinite(v)&&v>0?Math.round(v*100)/100:0;});
+  return o;
+}
+function toast(text){var t=$("toast");t.textContent=text;t.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(function(){t.hidden=true;},6000);}
+function fail(err){
+  var c=err&&err.code;
+  if(c==="permission-denied")return"The database refused this change. Check the Firestore rules in the README.";
+  return"Could not save. Check the internet connection and try again.";
+}
+
+/* ---- writes ---- */
+function approveDoc(e){return db.collection("approvals").doc(e.id).set({sig:sigOf(e),at:Date.now(),by:"Baleyew"});}
+
+function saveEntry(ev){
+  ev.preventDefault();
+  var o=readForm();
+  if(!o.date){say("Pick a date.","err");return;}
+  if(!AMOUNTS.some(function(k){return o[k]>0;})&&!o.note){say("Enter at least one amount or a note.","err");return;}
+  if(o.deposit>0&&!o.type){say("Choose a deposit type: CBE, T or CASH.","err");return;}
+  var btn=$("saveBtn"),owner=isOwner(),old=editing?entries.filter(function(x){return x.id===editing;})[0]:null;
+  btn.disabled=true;say("Saving…");
+  var now=Date.now(),col=db.collection("entries"),ref=old?col.doc(old.id):col.doc();
+  var doc={date:o.date,gebi:o.gebi,wechi:o.wechi,deposit:o.deposit,asrat:o.asrat,balebet:o.balebet,miste:o.miste,note:o.note,type:o.type,
+    by:old?old.by:(owner?"Baleyew":"Mistyew"),createdAt:old?old.createdAt:now,updatedAt:now};
+  ref.set(doc).then(function(){
+    if(owner&&o.type==="CASH")return approveDoc(Object.assign({id:ref.id},doc));
+  }).then(function(){
+    var x=toEth(o.date);view={y:x.y,m:x.m};syncMonth();
+    editing=null;setForm(null);
+    say(o.type==="CASH"?(owner?"Saved. Cash approved by you.":"Saved. Waiting for Baleyew to approve the cash."):"Saved.","good");
+    render();
+  }).catch(function(err){say(fail(err),"err");}).then(function(){btn.disabled=false;});
+}
+
+/* ---- events ---- */
+$("form").addEventListener("submit",saveEntry);
+$("form").addEventListener("change",syncForm);
+$("fDate").addEventListener("input",syncForm);
+$("cancelBtn").addEventListener("click",function(){editing=null;setForm(null);say("");});
+$("filters").addEventListener("click",function(e){var b=e.target.closest("button");if(b){filter=b.dataset.f;render();}});
+$("prevM").addEventListener("click",function(){moveMonth(-1);});
+$("nextM").addEventListener("click",function(){moveMonth(1);});
+$("thisM").addEventListener("click",function(){var t=toEth(todayISO());view={y:t.y,m:t.m};syncMonth();render();});
+$("selM").addEventListener("change",function(){view.m=Number($("selM").value);render();});
+$("selY").addEventListener("change",function(){var y=parseInt($("selY").value,10);if(y>1900&&y<2200){view.y=y;render();}else syncMonth();});
+
+document.addEventListener("click",function(e){
+  if(e.target.id==="ownerBtn"){
+    if(e.target.dataset.mode==="lock"){lsSet(TOKEN_KEY,null);panelOpen=false;toast("Owner mode is locked on this device.");render();}
+    else{panelOpen=true;$("pinMsg").textContent="";$("pin1").value="";$("pin2").value="";render();$("ownerPanel").scrollIntoView({behavior:"smooth",block:"start"});setTimeout(function(){$("pin1").focus();},200);}
+  }
+  if(e.target.id==="showWait"){
+    filter="wait";
+    var d=prepared().filter(function(x){return x.cash&&x.cash!=="approved";}).sort(function(a,b){return a.date<b.date?-1:1;})[0];
+    if(d){var x=toEth(d.date);view={y:x.y,m:x.m};syncMonth();}
+    render();$("ledgerTitle").scrollIntoView({behavior:"smooth",block:"start"});
+  }
+});
+$("pinCancel").addEventListener("click",function(){panelOpen=false;render();});
+$("pinForm").addEventListener("submit",function(ev){
+  ev.preventDefault();
+  var m=$("pinMsg"),pin=$("pin1").value.trim();
+  function bad(t){m.className="msg err";m.textContent=t;}
+  if(!loadedS){bad("Still connecting. Try again in a moment.");return;}
+  if(pin.length<4){bad("The PIN needs at least 4 digits.");return;}
+  var first=!(settings&&settings.hash);
+  $("pinBtn").disabled=true;m.className="msg";m.textContent="Checking…";
+  var p;
+  if(first){
+    if(pin!==$("pin2").value.trim()){bad("The two PINs do not match.");$("pinBtn").disabled=false;return;}
+    var salt=randomSalt();
+    p=hashPin(pin,salt).then(function(h){
+      return db.collection("settings").doc("owner").set({salt:salt,hash:h,createdAt:Date.now()}).then(function(){settings={salt:salt,hash:h};lsSet(TOKEN_KEY,h);});
+    });
+  }else{
+    p=hashPin(pin,settings.salt).then(function(h){
+      if(h!==settings.hash)throw{bad:true};
+      lsSet(TOKEN_KEY,h);
+    });
+  }
+  p.then(function(){panelOpen=false;toast(first?"PIN saved. Owner mode is on.":"Owner mode is on.");render();})
+   .catch(function(err){bad(err&&err.bad?"That PIN is wrong.":(err&&err.message&&!err.code?err.message:fail(err)));})
+   .then(function(){$("pinBtn").disabled=false;});
+});
+
+$("rows").addEventListener("click",function(ev){
+  var b=ev.target.closest("button[data-act]");if(!b)return;
+  var id=b.dataset.id,act=b.dataset.act,en=prepared().filter(function(x){return x.id===id;})[0];
+  if(!en)return;
+  if(act==="approve"){
+    if(!isOwner())return;
+    approveDoc(en).then(function(){toast("Cash approved. Mistyew can see it now.");}).catch(function(e){toast(fail(e));});
+  }else if(act==="edit"){
+    editing=id;setForm(en);say("Editing the entry from "+gLabel(en.date)+".");$("formSheet").scrollIntoView({behavior:"smooth",block:"start"});
+  }else if(act==="del"){
+    if(!isOwner()&&en.cash==="approved")return;
+    if(armed!==id){armed=id;clearTimeout(armTimer);armTimer=setTimeout(function(){armed=null;render();},4000);render();return;}
+    armed=null;clearTimeout(armTimer);
+    db.collection("entries").doc(id).delete().then(function(){return db.collection("approvals").doc(id).delete();}).then(function(){
+      if(editing===id){editing=null;setForm(null);}toast("Entry deleted.");
+    }).catch(function(e){toast(fail(e));render();});
+  }
+});
+
+/* ---- live data ---- */
+function listen(){
+  var firstE=true,firstA=true,seenE=new Set(),seenA=new Set();
+  db.collection("entries").onSnapshot(function(snap){
+    var list=[];
+    snap.docs.forEach(function(d){var v=d.data();list.push(Object.assign({id:d.id},v));});
+    if(!firstE&&isOwner()){
+      list.forEach(function(e){
+        if(!seenE.has(e.id)&&e.type==="CASH"&&e.by!=="Baleyew")toast("Mistyew added a cash entry"+(e.deposit?" of "+fmt(e.deposit)+" Birr":"")+". It is waiting for your approval.");
+      });
+    }
+    seenE=new Set(list.map(function(e){return e.id;}));
+    entries=list;loadedE=true;firstE=false;showError("");render();
+  },function(err){showError(err&&err.code==="permission-denied"?"The database refused to open. Check the Firestore rules in the README.":"Cannot reach the database. Check the internet connection.");});
+  db.collection("approvals").onSnapshot(function(snap){
+    var m=new Map();snap.docs.forEach(function(d){m.set(d.id,d.data());});
+    if(!firstA&&!isOwner()){
+      m.forEach(function(v,id){
+        var en=entries.filter(function(x){return x.id===id;})[0];
+        if(!seenA.has(id)&&en)toast("Baleyew approved a cash entry"+(en.deposit?" of "+fmt(en.deposit)+" Birr":"")+".");
+      });
+    }
+    seenA=new Set(m.keys());
+    approvals=m;firstA=false;render();
+  },function(){});
+  db.collection("settings").onSnapshot(function(snap){
+    settings=null;snap.docs.forEach(function(d){if(d.id==="owner")settings=d.data();});
+    loadedS=true;render();
+  },function(){});
+}
+
+/* ---- start ---- */
+function start(){
+  var cfg=window.FIREBASE_CONFIG;
+  var ok=cfg&&cfg.apiKey&&cfg.projectId&&String(cfg.apiKey).indexOf("PASTE")<0&&String(cfg.projectId).indexOf("PASTE")<0;
+  if(!window.firebase||!window.firebase.firestore){
+    $("setupText").textContent="The Firebase library did not load. Check the internet connection and reload.";
+    $("setupView").hidden=false;return;
+  }
+  if(!ok){$("setupView").hidden=false;return;}
+  firebase.initializeApp(cfg);
+  db=firebase.firestore();
+  $("appView").hidden=false;
+  buildMonthSelect();setForm(null);render();
+  listen();
+}
+start();
+})();
+</script>
+</body>
+</html>
